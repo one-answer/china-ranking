@@ -1,0 +1,136 @@
+---
+// 接收当前搜索关键词作为属性
+interface Props {
+  initialQuery?: string;
+}
+
+const { initialQuery = '' } = Astro.props;
+---
+
+<div class="bg-vscode-darker mb-4 p-4 rounded-b-md border border-t-0 border-vscode-line shadow-code">
+  <div id="search-form" class="flex flex-col sm:flex-row gap-2 items-center search-form">
+    <div class="flex-grow relative search-input-container">
+      <div class="absolute left-3 top-1/2 -translate-y-1/2 text-vscode-comment">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input
+        type="text"
+        id="search-input"
+        name="query"
+        placeholder="输入 GitHub 用户名搜索..."
+        class="w-full pl-10 pr-4 py-2 bg-vscode-bg border border-vscode-line text-vscode-text font-mono rounded-md focus:outline-none focus:ring-1 focus:ring-vscode-function placeholder:text-vscode-comment"
+        value={initialQuery}
+      />
+    </div>
+    <div class="flex gap-2 search-buttons">
+      <button
+        type="button"
+        id="search-button"
+        class="px-4 py-2 bg-vscode-function text-vscode-bg rounded-md border border-vscode-function hover:bg-vscode-keyword hover:border-vscode-keyword focus:outline-none focus:ring-1 focus:ring-vscode-keyword font-mono search-button"
+      >
+        .find()
+      </button>
+      <button
+        type="button"
+        id="clear-search"
+        class="px-4 py-2 bg-vscode-bg text-vscode-text border border-vscode-line rounded-md hover:bg-vscode-sidebar focus:outline-none focus:ring-1 focus:ring-vscode-line font-mono search-button"
+      >
+        .clear()
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 获取表单元素
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const searchButton = document.getElementById('search-button') as HTMLButtonElement;
+  const clearButton = document.getElementById('clear-search') as HTMLButtonElement;
+
+  // 搜索函数
+  function performSearch() {
+    const query = searchInput.value.trim().toLowerCase();
+    const userCards = document.querySelectorAll('.user-card');
+
+    // 获取搜索结果计数容器
+    let searchResultInfo = document.getElementById('search-result-info');
+    if (!searchResultInfo) {
+      searchResultInfo = document.createElement('div');
+      searchResultInfo.id = 'search-result-info';
+      searchResultInfo.className = 'mt-4 mb-4 bg-vscode-darker p-3 rounded-md text-vscode-text border border-vscode-line shadow-code font-mono';
+
+      // 将结果信息插入到搜索栏下方
+      const searchBarContainer = document.querySelector('.search-bar-container');
+      if (searchBarContainer) {
+        searchBarContainer.after(searchResultInfo);
+      }
+    }
+
+    // 如果没有查询词，隐藏搜索结果信息
+    if (!query) {
+      searchResultInfo.style.display = 'none';
+      userCards.forEach(card => {
+        (card as HTMLElement).style.display = 'block';
+      });
+      return;
+    }
+
+    // 过滤用户卡片
+    let matchCount = 0;
+    userCards.forEach(card => {
+      const userLogin = (card as HTMLElement).dataset.login?.toLowerCase() || '';
+      const userName = (card as HTMLElement).dataset.name?.toLowerCase() || '';
+
+      if (userLogin.includes(query) || userName.includes(query)) {
+        (card as HTMLElement).style.display = 'block';
+        matchCount++;
+      } else {
+        (card as HTMLElement).style.display = 'none';
+      }
+    });
+
+    // 更新搜索结果信息
+    searchResultInfo.style.display = 'block';
+    if (matchCount === 0) {
+      searchResultInfo.innerHTML = `<span class="text-vscode-error">未找到匹配 "</span><span class="text-vscode-string">${query}</span><span class="text-vscode-error">" 的用户</span>`;
+    } else {
+      searchResultInfo.innerHTML = `<span class="text-vscode-keyword">找到 </span><span class="text-vscode-number">${matchCount}</span><span class="text-vscode-keyword"> 个匹配 "</span><span class="text-vscode-string">${query}</span><span class="text-vscode-keyword">" 的用户</span>`;
+    }
+  }
+
+  // 清除搜索函数
+  function clearSearch() {
+    searchInput.value = '';
+
+    // 显示所有用户卡片
+    const userCards = document.querySelectorAll('.user-card');
+    userCards.forEach(card => {
+      (card as HTMLElement).style.display = 'block';
+    });
+
+    // 隐藏搜索结果信息
+    const searchResultInfo = document.getElementById('search-result-info');
+    if (searchResultInfo) {
+      searchResultInfo.style.display = 'none';
+    }
+  }
+
+  // 绑定事件监听器
+  searchButton.addEventListener('click', performSearch);
+  clearButton.addEventListener('click', clearSearch);
+
+  // 绑定回车键搜索
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      performSearch();
+    }
+  });
+
+  // 初始化时执行一次搜索（如果有初始查询）
+  if (searchInput.value.trim()) {
+    performSearch();
+  }
+</script>

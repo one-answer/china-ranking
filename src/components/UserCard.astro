@@ -1,0 +1,202 @@
+---
+export interface Props {
+  user: {
+    login: string;
+    name: string;
+    avatar_url: string;
+    html_url: string;
+    followers: number;
+    public_repos: number;
+    bio?: string;
+    location?: string;
+    blog?: string;
+    twitter_username?: string;
+    company?: string;
+  };
+  rank: number;
+}
+
+const { user, rank } = Astro.props;
+
+// 处理 Twitter URL
+const twitterUrl = user.twitter_username
+  ? `https://x.com/${user.twitter_username}`
+  : null;
+
+// 处理 blog URL (确保有效URL)
+const blogUrl = user.blog
+  ? (user.blog.startsWith('http') ? user.blog : `https://${user.blog}`)
+  : null;
+---
+
+<div class="bg-vscode-lighter rounded-lg border border-vscode-line shadow-code p-5 relative user-card"
+  data-login={user.login}
+  data-name={user.name || ''}>
+  <!-- VSCode 窗口装饰 -->
+  <div class="absolute top-0 left-0 right-0 h-6 bg-vscode-darker border-b border-vscode-line flex items-center px-3 rounded-t-lg window-controls">
+    <div class="flex space-x-2">
+      <div class="w-3 h-3 rounded-full bg-red-500 dot"></div>
+      <div class="w-3 h-3 rounded-full bg-yellow-500 dot"></div>
+      <div class="w-3 h-3 rounded-full bg-green-500 dot"></div>
+    </div>
+    <div class="text-xs text-vscode-comment font-mono ml-3 truncate">@{user.login}.js</div>
+  </div>
+
+  <div class="pt-6">
+    <div class="flex gap-4">
+      <!-- 排名 -->
+      <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-vscode-keyword text-vscode-bg text-sm font-mono rounded-md user-rank">
+        {rank}
+      </div>
+
+      <!-- 用户头像 -->
+      <div class="flex-shrink-0">
+        <img
+          data-src={user.avatar_url}
+          alt={user.name || user.login}
+          class="w-12 h-12 rounded-md object-cover border border-vscode-line lazy-avatar user-avatar"
+          loading="lazy"
+          width="48"
+          height="48"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231e293b' class='w-12 h-12'%3E%3Cpath fill-rule='evenodd' d='M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z' clip-rule='evenodd' /%3E%3C/svg%3E"
+        />
+      </div>
+
+      <!-- 用户信息 -->
+      <div class="flex-grow min-w-0">
+        <div>
+          <h3 class="text-lg font-bold text-vscode-function truncate user-name">
+            {user.name || user.login}
+          </h3>
+          <p class="text-vscode-variable text-sm font-mono user-login">
+            <a href={user.html_url} target="_blank" class="hover:text-vscode-type">@{user.login}</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户简介 - 始终显示，保持固定高度 -->
+    <div class="mt-3 text-sm text-vscode-comment font-mono pl-3 border-l-2 border-vscode-line h-[3rem] overflow-y-auto scrollbar-thin scrollbar-thumb-vscode-line scrollbar-track-vscode-darker hover:scrollbar-thumb-vscode-function user-bio">
+      <span class="text-vscode-variable">// </span>
+      {user.bio || ''}
+    </div>
+
+    <!-- 统计数据 -->
+    <div class="mt-3 flex gap-3 stats-container">
+      <div class="bg-vscode-darker py-2 px-4 rounded-md text-center flex-1 border border-vscode-line font-mono stat-item">
+        <div class="text-lg font-bold text-vscode-number stat-value">{user.followers.toLocaleString()}</div>
+        <div class="text-xs text-vscode-comment stat-label">关注者</div>
+      </div>
+      <div class="bg-vscode-darker py-2 px-4 rounded-md text-center flex-1 border border-vscode-line font-mono stat-item">
+        <div class="text-lg font-bold text-vscode-number stat-value">{user.public_repos.toLocaleString()}</div>
+        <div class="text-xs text-vscode-comment stat-label">仓库</div>
+      </div>
+    </div>
+
+    <!-- 位置、公司和社交链接 -->
+    <div class="mt-3 flex justify-between gap-2 user-meta">
+      <div>
+        {user.location && (
+            <div class="inline-flex items-center bg-vscode-bg border border-vscode-line px-2 py-1 rounded text-xs text-vscode-text font-mono location-tag">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-vscode-string" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {user.location}
+            </div>
+        )}
+      </div>
+
+      <div class="flex justify-between gap-2">
+        {blogUrl && (
+            <a href={blogUrl} target="_blank" class="inline-flex items-center justify-center bg-vscode-bg border border-vscode-line p-2 rounded text-xs text-vscode-text font-mono hover:border-vscode-function w-7 h-7 social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-vscode-keyword social-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+            </a>
+        )}
+
+        {twitterUrl && (
+            <a href={twitterUrl} target="_blank" class="inline-flex items-center justify-center bg-vscode-bg border border-vscode-line p-2 rounded text-xs text-vscode-text font-mono hover:border-vscode-function w-7 h-7 social-link">
+              <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white social-icon" fill="white">
+                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
+              </svg>
+            </a>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 使用 Intersection Observer 实现图片懒加载
+  document.addEventListener('DOMContentLoaded', () => {
+    const lazyLoadImages = () => {
+      // 创建 IntersectionObserver 实例
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          // 当图片进入视口时
+          if (entry.isIntersecting) {
+            const img = entry.target as HTMLImageElement;
+            const src = img.dataset.src;
+            
+            if (src) {
+              // 预加载图片
+              const preloadImg = new Image();
+              preloadImg.src = src;
+              
+              preloadImg.onload = () => {
+                // 图片加载完成后替换占位符
+                img.src = src;
+                img.classList.add('loaded');
+              };
+              
+              preloadImg.onerror = () => {
+                // 图片加载失败时保留占位符
+                console.error('Failed to load avatar:', src);
+              };
+              
+              // 图片已处理，取消观察
+              observer.unobserve(img);
+            }
+          }
+        });
+      }, {
+        // 根元素外边距，决定触发时机
+        rootMargin: '50px',
+        // 可见度阈值
+        threshold: 0.1
+      });
+      
+      // 获取所有懒加载图片并开始观察
+      const lazyImages = document.querySelectorAll('.lazy-avatar');
+      lazyImages.forEach(img => {
+        imageObserver.observe(img);
+      });
+    };
+    
+    // 如果浏览器支持 IntersectionObserver，则使用懒加载
+    if ('IntersectionObserver' in window) {
+      lazyLoadImages();
+    } else {
+      // 降级处理：对于不支持 IntersectionObserver 的浏览器
+      document.querySelectorAll('.lazy-avatar').forEach(img => {
+        const image = img as HTMLImageElement;
+        if (image.dataset.src) {
+          image.src = image.dataset.src;
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .lazy-avatar {
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0.6;
+  }
+  
+  .lazy-avatar.loaded {
+    opacity: 1;
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-vscode-darker py-6 sm:py-8 mt-12 border-t border-vscode-line">
+  <div class="container mx-auto px-4">
+    <div class="text-center text-vscode-text">
+      <p class="font-mono text-xs sm:text-sm">
+        <span class="text-vscode-comment">// </span>
+        <span class="text-vscode-variable">©</span>
+        <span class="text-vscode-number">{currentYear}</span>
+        <span class="text-vscode-string">中国区 GitHub 用户排行榜</span>
+      </p>
+      <p class="mt-2 text-xs text-vscode-comment font-mono">
+        /* 数据每日自动更新，基于 GitHub API 获取 */
+      </p>
+
+      <div class="mt-4 flex justify-center space-x-2 sm:space-x-4 flex-wrap footer-links">
+        <a href="https://github.com/hellokaton/china-ranking" class="text-vscode-function hover:text-vscode-string font-mono text-xs sm:text-sm my-1">
+          <span class="text-vscode-keyword">import</span> GitHubRepo <span class="text-vscode-keyword">from</span> <span class="text-vscode-string">'./source'</span>
+        </a>
+        <a href="https://github.com/hellokaton/china-ranking/issues" class="text-vscode-function hover:text-vscode-string font-mono text-xs sm:text-sm my-1">
+          <span class="text-vscode-keyword">new</span> <span class="text-vscode-type">Issue()</span>
+        </a>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-vscode-line">
+        <p class="font-mono text-vscode-comment text-xs sm:text-sm">
+          <span class="text-vscode-keyword">const</span> <span class="text-vscode-variable">author</span>
+        </p>
+        <div class="flex justify-center space-x-3 sm:space-x-4 mt-2 flex-wrap footer-links">
+          <a href="https://hellokaton.me" target="_blank" class="text-vscode-function hover:text-vscode-string font-mono text-xs sm:text-sm my-1">
+            <span class="text-vscode-property">hellokaton.me</span>
+          </a>
+          <a href="https://x.com/hellokaton" target="_blank" class="text-vscode-function hover:text-vscode-string font-mono text-xs sm:text-sm my-1">
+            <span class="text-vscode-string">@hellokaton</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,63 @@
+name: 更新中国区 GitHub 数据
+
+on:
+  schedule:
+    # 每天凌晨 3 点执行（UTC 时间 19:00，即北京时间 03:00）
+    - cron: "0 19 * * *"
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  update-ranking:
+    runs-on: ubuntu-latest
+    permissions: # Job-level permissions configuration starts here
+      contents: write # 'write' access to repository contents
+      pull-requests: write # 'write' access to pull requests
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: 获取 pnpm 存储目录
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: 设置 pnpm 缓存
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 抓取 GitHub 用户数据
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+        run: pnpm run fetch-data
+
+      - name: 提交更新数据
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add public/data/github-ranking.json
+          git commit -m "更新: GitHub 中国区用户排行榜数据 [skip ci]" || echo "没有更新"
+
+      - name: 推送更新
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.REPO_TOKEN }}
+          branch: main
+          force_with_lease: true

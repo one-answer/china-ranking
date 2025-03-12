@@ -1,0 +1,24 @@
+---
+const { activeTab = "code" } = Astro.props;
+---
+
+<div class="flex font-mono overflow-hidden border border-vscode-line rounded-t-md bg-vscode-darker">
+  <a
+    href="/"
+    class={`px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base ${activeTab === 'code' 
+      ? 'bg-vscode-lighter text-vscode-function border-t-2 border-vscode-function' 
+      : 'bg-vscode-darker text-vscode-text hover:bg-vscode-sidebar'}`}
+  >
+    <span class="text-vscode-keyword">&lt;</span>
+    开发者
+    <span class="text-vscode-keyword">/&gt;</span>
+  </a>
+  <a
+    href="/markdown"
+    class={`px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base ${activeTab === 'markdown' 
+      ? 'bg-vscode-lighter text-vscode-string border-t-2 border-vscode-string' 
+      : 'bg-vscode-darker text-vscode-text hover:bg-vscode-sidebar'}`}
+  >
+    <span class="text-vscode-comment">#</span> Markdown 工程师
+  </a>
+</div>
