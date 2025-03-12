@@ -10,6 +10,19 @@ const __dirname = path.dirname(__filename);
 // GitHub Token (可通过环境变量设置)
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
+// 需要过滤的组织列表
+const organizationsToFilter = [
+  "alibaba",
+  "tencent",
+  "bytedance",
+  "open-mmlab",
+  "baidu",
+  "ant-design",
+  "apache",
+  "microsoft",
+  // 添加更多需要过滤的组织
+];
+
 // Octokit 高级配置
 const octokit = new Octokit({
   auth: GITHUB_TOKEN,
@@ -178,6 +191,11 @@ async function fetchTopChineseUsers() {
 
     for (const user of allUsers) {
       if (!uniqueIds.has(user.id)) {
+        // 过滤掉组织列表中的账号
+        if (organizationsToFilter.includes(user.login.toLowerCase())) {
+          console.log(`过滤组织账号: ${user.login}`);
+          continue;
+        }
         uniqueIds.add(user.id);
         uniqueUsers.push(user);
       }
@@ -207,6 +225,12 @@ async function fetchTopChineseUsers() {
               });
               return response.data;
             });
+
+            // 过滤组织账号
+            if (userData.type === "Organization") {
+              console.log(`过滤组织账号: ${userData.login}`);
+              return null;
+            }
 
             const userDataFormatted = {
               login: userData.login,

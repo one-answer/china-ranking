@@ -170,20 +170,6 @@
       "type": "code"
     },
     {
-      "login": "alibaba",
-      "name": "Alibaba",
-      "avatar_url": "https://avatars.githubusercontent.com/u/1961952?v=4",
-      "html_url": "https://github.com/alibaba",
-      "followers": 15692,
-      "public_repos": 449,
-      "bio": "Alibaba Open Source",
-      "location": "Hangzhou, China",
-      "twitter_username": null,
-      "blog": "https://opensource.alibaba.com/",
-      "company": null,
-      "type": "code"
-    },
-    {
       "login": "Ovilia",
       "name": "Wenli Zhang",
       "avatar_url": "https://avatars.githubusercontent.com/u/779050?v=4",
@@ -394,20 +380,6 @@
       "type": "code"
     },
     {
-      "login": "open-mmlab",
-      "name": "OpenMMLab",
-      "avatar_url": "https://avatars.githubusercontent.com/u/10245193?v=4",
-      "html_url": "https://github.com/open-mmlab",
-      "followers": 10956,
-      "public_repos": 54,
-      "bio": null,
-      "location": "China",
-      "twitter_username": "OpenMMLab",
-      "blog": "https://openmmlab.com",
-      "company": null,
-      "type": "code"
-    },
-    {
       "login": "miloyip",
       "name": "Milo Yip",
       "avatar_url": "https://avatars.githubusercontent.com/u/1195774?v=4",
@@ -446,20 +418,6 @@
       "location": "Shanghai China",
       "twitter_username": null,
       "blog": "http://sofi.sh",
-      "company": null,
-      "type": "code"
-    },
-    {
-      "login": "Tencent",
-      "name": "Tencent",
-      "avatar_url": "https://avatars.githubusercontent.com/u/18461506?v=4",
-      "html_url": "https://github.com/Tencent",
-      "followers": 10345,
-      "public_repos": 209,
-      "bio": null,
-      "location": "Shenzhen, China",
-      "twitter_username": null,
-      "blog": "https://opensource.tencent.com",
       "company": null,
       "type": "code"
     },
