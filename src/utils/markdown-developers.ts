@@ -24,4 +24,7 @@ export const markdownDevelopers = [
   "sunface",
   "CyC2018",
   "LingCoder",
+  "amusi",
+  "wx-chevalier",
+  "doocs",
 ];
