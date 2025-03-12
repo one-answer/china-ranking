@@ -4,6 +4,6 @@ import tailwind from "@astrojs/tailwind";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://china-ranking.vercel.app",
+  site: "http://localhost:4321",
   integrations: [tailwind()],
 });

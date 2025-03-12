@@ -6,11 +6,8 @@ import SearchBar from '@/components/SearchBar.astro';
 import { getRankingData } from '@/utils/data';
 
 // 获取数据
-const rankingData = await getRankingData();
-const { codeDevelopers, updateTime } = rankingData;
-
-// 限制只显示前1000条数据
-const limitedCodeDevelopers = codeDevelopers.slice(0, 1000);
+const rankingData = await getRankingData("code");
+const { developers, updateTime } = rankingData;
 
 // 格式化更新时间为中文时区
 const formatUpdateTime = (isoString: string) => {
@@ -42,7 +39,7 @@ const formattedUpdateTime = formatUpdateTime(updateTime);
         <SearchBar initialQuery="" />
       </div>
 
-      {limitedCodeDevelopers.length === 0 ? (
+      {developers.length === 0 ? (
         <div class="text-center p-12 bg-vscode-lighter rounded-lg border border-vscode-line shadow-code">
           <p class="text-lg font-bold text-vscode-function">数据加载中，请稍候...</p>
           <p class="mt-4 text-vscode-comment font-mono">
@@ -51,7 +48,7 @@ const formattedUpdateTime = formatUpdateTime(updateTime);
         </div>
       ) : (
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ranking-grid">
-          {limitedCodeDevelopers.map((user, index) => (
+          {developers.map((user, index) => (
             <UserCard user={user} rank={index + 1} />
           ))}
         </div>

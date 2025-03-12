@@ -216,19 +216,11 @@ async function fetchTopChineseUsers() {
       const batchResults = await Promise.all(
         batch.map(async (user) => {
           try {
-            // 检查缓存中是否已有该用户数据且未过期(7天内的数据视为有效)
+            // 检查缓存中是否已有该用户数据
             const cachedUser = cachedUsers[user.login];
-            const cacheAge = cachedUser
-              ? (Date.now() - new Date(cachedUser.cachedAt).getTime()) /
-                (1000 * 60 * 60 * 24)
-              : 999;
 
-            if (cachedUser && cacheAge < 7) {
-              console.log(
-                `使用缓存数据: ${user.login} (${Math.round(
-                  cacheAge * 24
-                )}小时前)`
-              );
+            if (cachedUser) {
+              console.log(`使用缓存数据: ${user.login}`);
               return cachedUser.data;
             }
 
@@ -307,15 +299,10 @@ async function fetchTopChineseUsers() {
     // 按照 followers 排序
     sortedUsers.sort((a, b) => b.followers - a.followers);
 
-    // 分离编程开发者和文档开发者
-    const codeDevelopers = sortedUsers.filter((user) => user.type === "code");
-    const markdownDevs = sortedUsers.filter((user) => user.type === "markdown");
-
     // 添加最后更新时间
     const data = {
       updateTime: new Date().toISOString(),
-      codeDevelopers,
-      markdownDevelopers: markdownDevs,
+      developers: sortedUsers,
     };
 
     // 创建数据目录（如果不存在）
@@ -328,9 +315,7 @@ async function fetchTopChineseUsers() {
       JSON.stringify(data, null, 2)
     );
 
-    console.log(
-      `获取完成！共有 ${codeDevelopers.length} 名编程开发者和 ${markdownDevs.length} 名文档开发者。`
-    );
+    console.log(`获取完成！共有 ${sortedUsers.length} 名开发者。`);
 
     // 最终检查 API 状态
     await checkRateLimitStatus();
