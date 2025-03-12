@@ -2,7 +2,6 @@ import { Octokit } from "octokit";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { markdownDevelopers } from "./markdown-developers.js";
 
 // 获取当前文件的目录路径
 const __filename = fileURLToPath(import.meta.url);
@@ -190,21 +189,6 @@ async function fetchTopChineseUsers() {
     const batchSize = 5; // 每批处理用户数
     const sortedUsers = [];
 
-    // 检查是否有本地缓存文件
-    let cachedUsers = {};
-    const cacheFilePath = path.resolve(
-      __dirname,
-      "../public/data/github-users-cache.json"
-    );
-    try {
-      const cacheData = await fs.readFile(cacheFilePath, "utf8");
-      cachedUsers = JSON.parse(cacheData);
-      console.log(`已加载 ${Object.keys(cachedUsers).length} 个用户的缓存数据`);
-    } catch (error) {
-      console.log(`未找到缓存文件或无法读取，将创建新缓存`);
-      cachedUsers = {};
-    }
-
     for (let i = 0; i < uniqueUsers.length; i += batchSize) {
       const batch = uniqueUsers.slice(i, i + batchSize);
       console.log(
@@ -216,14 +200,6 @@ async function fetchTopChineseUsers() {
       const batchResults = await Promise.all(
         batch.map(async (user) => {
           try {
-            // 检查缓存中是否已有该用户数据
-            const cachedUser = cachedUsers[user.login];
-
-            if (cachedUser) {
-              console.log(`使用缓存数据: ${user.login}`);
-              return cachedUser.data;
-            }
-
             // 使用限速请求获取用户详情
             const userData = await rateLimitedRequest(async () => {
               const response = await octokit.rest.users.getByUsername({
@@ -244,15 +220,6 @@ async function fetchTopChineseUsers() {
               twitter_username: userData.twitter_username,
               blog: userData.blog,
               company: userData.company,
-              type: markdownDevelopers.includes(userData.login)
-                ? "markdown"
-                : "code",
-            };
-
-            // 更新缓存
-            cachedUsers[user.login] = {
-              cachedAt: new Date().toISOString(),
-              data: userDataFormatted,
             };
 
             return userDataFormatted;
@@ -265,29 +232,6 @@ async function fetchTopChineseUsers() {
 
       // 添加有效结果到排序用户列表
       sortedUsers.push(...batchResults.filter((user) => user !== null));
-
-      // 每处理完5个批次，保存一次缓存
-      if (
-        (Math.floor(i / batchSize) + 1) % 5 === 0 ||
-        i + batchSize >= uniqueUsers.length
-      ) {
-        try {
-          // 确保目录存在
-          const dataDir = path.resolve(__dirname, "../public/data");
-          await fs.mkdir(dataDir, { recursive: true });
-
-          // 保存缓存文件
-          await fs.writeFile(
-            cacheFilePath,
-            JSON.stringify(cachedUsers, null, 2)
-          );
-          console.log(
-            `已更新缓存文件，包含 ${Object.keys(cachedUsers).length} 个用户数据`
-          );
-        } catch (error) {
-          console.error(`保存缓存文件失败:`, error);
-        }
-      }
 
       // 批次间添加延迟
       if (i + batchSize < uniqueUsers.length) {
