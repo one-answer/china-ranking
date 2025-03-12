@@ -45,7 +45,7 @@ jobs:
 
       - name: 抓取 GitHub 用户数据
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FETCH_TOKEN }}
         run: pnpm run fetch-data
 
       - name: 提交更新数据

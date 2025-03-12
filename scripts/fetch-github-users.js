@@ -1,7 +1,7 @@
-import {Octokit} from "octokit";
+import { Octokit } from "octokit";
 import fs from "fs/promises";
 import path from "path";
-import {fileURLToPath} from "url";
+import { fileURLToPath } from "url";
 
 // 获取当前文件的目录路径
 const __filename = fileURLToPath(import.meta.url);
@@ -130,52 +130,74 @@ async function fetchTopChineseUsers() {
     console.log("开始获取中国用户数据...");
 
     // 使用 GitHub API 搜索中国区用户
-    // 注意：这里使用 location 参数，但因为 GitHub API 限制，我们需要分页获取更多数据
     let allUsers = [];
 
     // 优化城市列表，减少请求次数
-    const locations = [
-      "china",
-    ];
+    const locations = ["china"];
 
     // 设置搜索参数和结果缓存
     const searchCache = new Map();
+    // 设置每个位置获取的页数
+    const maxPages = 15;
 
     for (const location of locations) {
       console.log(`搜索位置: ${location}`);
+      let locationUsers = [];
 
-      // 检查是否还有足够的请求配额
-      const status = await checkRateLimitStatus();
-      if (status && status.remaining < 10) {
-        console.log(`API 请求配额不足，等待直到重置...`);
-        const waitTime = status.resetTime - new Date() + 1000;
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-      }
+      // 循环获取多页数据
+      for (let page = 1; page <= maxPages; page++) {
+        console.log(`获取位置 ${location} 的第 ${page}/${maxPages} 页数据`);
 
-      // 使用限速请求获取用户数据
-      const data = await rateLimitedRequest(async () => {
-        const cacheKey = `location:${location}`;
-        if (searchCache.has(cacheKey)) {
-          console.log(`使用缓存数据: ${cacheKey}`);
-          return searchCache.get(cacheKey);
+        // 检查是否还有足够的请求配额
+        const status = await checkRateLimitStatus();
+        if (status && status.remaining < 10) {
+          console.log(`API 请求配额不足，等待直到重置...`);
+          const waitTime = status.resetTime - new Date() + 1000;
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
         }
 
-        const response = await octokit.rest.search.users({
-          q: `location:${location} followers:>100 sort:followers`,
-          per_page: 100,
+        // 使用限速请求获取用户数据
+        const data = await rateLimitedRequest(async () => {
+          const cacheKey = `location:${location}:page:${page}`;
+          if (searchCache.has(cacheKey)) {
+            console.log(`使用缓存数据: ${cacheKey}`);
+            return searchCache.get(cacheKey);
+          }
+
+          const response = await octokit.rest.search.users({
+            q: `location:${location} followers:>1000 sort:followers`,
+            per_page: 100,
+            page: page,
+          });
+
+          // 缓存结果
+          searchCache.set(cacheKey, response.data);
+          return response.data;
         });
 
-        // 缓存结果
-        searchCache.set(cacheKey, response.data);
-        return response.data;
-      });
+        // 添加到用户列表中
+        locationUsers = [...locationUsers, ...data.items];
+        console.log(`第 ${page} 页找到 ${data.items.length} 名用户`);
 
-      // 添加到用户列表中
-      allUsers = [...allUsers, ...data.items];
+        // 如果当前页返回的用户数量少于请求的数量，说明已没有更多数据
+        if (data.items.length < 100) {
+          console.log(`位置 ${location} 的数据已全部获取，共 ${page} 页`);
+          break;
+        }
 
-      // 适当延迟以减轻 API 负担
-      console.log(`已搜索 ${location}，找到 ${data.items.length} 名用户`);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+        // 适当延迟以减轻 API 负担
+        if (page < maxPages) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
+
+      console.log(`位置 ${location} 共找到 ${locationUsers.length} 名用户`);
+      allUsers = [...allUsers, ...locationUsers];
+
+      // 位置之间添加延迟
+      if (locations.indexOf(location) < locations.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
     }
 
     // 去重
