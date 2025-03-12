@@ -2,6 +2,8 @@
 // 其他开发者可以通过 PR 更新此列表
 
 export const markdownDevelopers = [
+  "programthink",
+  "jackfrued",
   "jaywcjlove",
   "ruanyf",
   "xitu",
