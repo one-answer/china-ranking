@@ -136,13 +136,6 @@ async function fetchTopChineseUsers() {
     // 优化城市列表，减少请求次数
     const locations = [
       "china",
-      "beijing",
-      "shanghai",
-      "guangzhou",
-      "shenzhen",
-      "hangzhou",
-      "chengdu",
-      // 减少其他城市请求，按需添加
     ];
 
     // 设置搜索参数和结果缓存
