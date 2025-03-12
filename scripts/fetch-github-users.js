@@ -1,7 +1,7 @@
-import { Octokit } from "octokit";
+import {Octokit} from "octokit";
 import fs from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
+import {fileURLToPath} from "url";
 
 // 获取当前文件的目录路径
 const __filename = fileURLToPath(import.meta.url);
@@ -232,7 +232,7 @@ async function fetchTopChineseUsers() {
               return null;
             }
 
-            const userDataFormatted = {
+            return {
               login: userData.login,
               name: userData.name || userData.login,
               avatar_url: userData.avatar_url,
@@ -245,8 +245,6 @@ async function fetchTopChineseUsers() {
               blog: userData.blog,
               company: userData.company,
             };
-
-            return userDataFormatted;
           } catch (error) {
             console.error(`获取用户详情出错: ${user.login}`, error);
             return null;
@@ -263,9 +261,6 @@ async function fetchTopChineseUsers() {
         await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     }
-
-    // 按照 followers 排序
-    sortedUsers.sort((a, b) => b.followers - a.followers);
 
     // 添加最后更新时间
     const data = {

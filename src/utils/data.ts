@@ -50,6 +50,9 @@ export async function getRankingData(type: DeveloperType = "all"): Promise<{
       );
     }
 
+    // 按照 followers 数量从高到低排序
+    filteredDevelopers.sort((a, b) => b.followers - a.followers);
+
     return {
       updateTime: data.updateTime,
       developers: filteredDevelopers.slice(0, 1000),
