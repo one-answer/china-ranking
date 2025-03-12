@@ -165,7 +165,7 @@ async function fetchTopChineseUsers() {
           }
 
           const response = await octokit.rest.search.users({
-            q: `location:${location} followers:>1000 sort:followers`,
+            q: `location:${location} followers:>1000 type:user sort:followers`,
             per_page: 100,
             page: page,
           });
@@ -241,12 +241,7 @@ async function fetchTopChineseUsers() {
               return response.data;
             });
 
-            // 过滤组织账号
-            if (userData.type === "Organization") {
-              console.log(`过滤组织账号: ${userData.login}`);
-              return null;
-            }
-
+            // 不再需要通过type过滤，因为查询参数已经指定了type:user
             return {
               login: userData.login,
               name: userData.name || userData.login,
