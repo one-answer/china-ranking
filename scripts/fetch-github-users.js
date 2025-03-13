@@ -227,7 +227,7 @@ async function fetchTopChineseUsers() {
 
     // 去重处理
     console.log(`所有查询共获取到 ${allUsers.length} 个用户记录，开始去重...`);
-    return;
+    
     const uniqueUsers = [];
     const uniqueIds = new Set();
     let duplicateCount = 0;
