@@ -137,7 +137,13 @@ async function fetchTopChineseUsers() {
     const searchQueries = [
       // 按照粉丝数量分段
       { location: "china", followers: "500..1000", sort: "followers" },
-      { location: "china", followers: ">1000", sort: "followers" },
+      { location: "china", followers: ">1000", sort: "followers" }, // 目前这个范围只有 580 个人
+      { location: "beijing", followers: ">1000", sort: "followers" },
+      { location: "shanghai", followers: ">1000", sort: "followers" },
+      { location: "hangzhou", followers: ">1000", sort: "followers" },
+      { location: "shenzhen", followers: ">1000", sort: "followers" },
+      { location: "wuhan", followers: ">1000", sort: "followers" },
+      { location: "zhengzhou", followers: ">1000", sort: "followers" },
     ];
 
     // 设置搜索参数和结果缓存
@@ -148,7 +154,7 @@ async function fetchTopChineseUsers() {
 
     for (const query of searchQueries) {
       const { location, followers, sort } = query;
-      const queryString = `location:${location} followers:${followers}`;
+      const queryString = `type:user location:${location} followers:${followers}`;
       console.log(`执行搜索查询: ${queryString}, 排序方式: ${sort}`);
       let queryUsers = [];
 
@@ -221,6 +227,7 @@ async function fetchTopChineseUsers() {
 
     // 去重处理
     console.log(`所有查询共获取到 ${allUsers.length} 个用户记录，开始去重...`);
+    return;
     const uniqueUsers = [];
     const uniqueIds = new Set();
     let duplicateCount = 0;
