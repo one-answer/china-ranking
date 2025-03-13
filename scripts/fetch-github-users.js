@@ -166,7 +166,8 @@ async function fetchTopChineseUsers() {
           }
 
           const response = await octokit.rest.search.users({
-            q: `location:${location} followers:>1000 type:user sort:followers`,
+            // q: `location:${location} followers:>=1000 type:user sort:followers`,
+            q: `location:${location} followers:>=500 type:user sort:followers`,
             per_page: 100,
             page: page,
           });
