@@ -138,8 +138,9 @@ async function fetchTopChineseUsers() {
 
     // 设置搜索参数和结果缓存
     const searchCache = new Map();
-    // 设置每个位置获取的页数
+    // 设置每个位置获取的页数（可根据需要调整）
     const maxPages = 15;
+    console.log(`设置最大获取页数为: ${maxPages}`);
 
     for (const location of locations) {
       console.log(`搜索位置: ${location}`);
@@ -167,7 +168,7 @@ async function fetchTopChineseUsers() {
 
           const response = await octokit.rest.search.users({
             // q: `location:${location} followers:>=1000 type:user sort:followers`,
-            q: `location:${location} followers:>=500 type:user sort:followers`,
+            q: `location:${location} followers:>500 type:user sort:followers`,
             per_page: 100,
             page: page,
           });
@@ -181,9 +182,15 @@ async function fetchTopChineseUsers() {
         locationUsers = [...locationUsers, ...data.items];
         console.log(`第 ${page} 页找到 ${data.items.length} 名用户`);
 
-        // 如果当前页返回的用户数量少于请求的数量，说明已没有更多数据
+        // 如果当前页返回的用户数量少于请求的数量或为0，说明已没有更多数据
         if (data.items.length < 100) {
-          console.log(`位置 ${location} 的数据已全部获取，共 ${page} 页`);
+          if (data.items.length === 0) {
+            console.log(
+              `位置 ${location} 第 ${page} 页没有数据，停止获取后续页面`
+            );
+          } else {
+            console.log(`位置 ${location} 的数据已全部获取，共 ${page} 页`);
+          }
           break;
         }
 
