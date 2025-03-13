@@ -133,22 +133,30 @@ async function fetchTopChineseUsers() {
     // 使用 GitHub API 搜索中国区用户
     let allUsers = [];
 
-    // 优化城市列表，减少请求次数
-    const locations = ["china"];
+    // 按不同维度分割搜索条件，突破1000条结果限制
+    const searchQueries = [
+      // 按照粉丝数量分段
+      { location: "china", followers: "500..1000", sort: "followers" },
+      { location: "china", followers: ">1000", sort: "followers" },
+    ];
 
     // 设置搜索参数和结果缓存
     const searchCache = new Map();
-    // 设置每个位置获取的页数（可根据需要调整）
-    const maxPages = 15;
-    console.log(`设置最大获取页数为: ${maxPages}`);
+    // 设置每个查询最大获取的页数
+    const maxPages = 20;
+    console.log(`设置每个查询最大获取页数为: ${maxPages}`);
 
-    for (const location of locations) {
-      console.log(`搜索位置: ${location}`);
-      let locationUsers = [];
+    for (const query of searchQueries) {
+      const { location, followers, sort } = query;
+      const queryString = `location:${location} followers:${followers}`;
+      console.log(`执行搜索查询: ${queryString}, 排序方式: ${sort}`);
+      let queryUsers = [];
 
       // 循环获取多页数据
       for (let page = 1; page <= maxPages; page++) {
-        console.log(`获取位置 ${location} 的第 ${page}/${maxPages} 页数据`);
+        console.log(
+          `获取查询 [${queryString}] 的第 ${page}/${maxPages} 页数据`
+        );
 
         // 检查是否还有足够的请求配额
         const status = await checkRateLimitStatus();
@@ -160,15 +168,14 @@ async function fetchTopChineseUsers() {
 
         // 使用限速请求获取用户数据
         const data = await rateLimitedRequest(async () => {
-          const cacheKey = `location:${location}:page:${page}`;
+          const cacheKey = `query:${queryString}:sort:${sort}:page:${page}`;
           if (searchCache.has(cacheKey)) {
             console.log(`使用缓存数据: ${cacheKey}`);
             return searchCache.get(cacheKey);
           }
 
           const response = await octokit.rest.search.users({
-            // q: `location:${location} followers:>=1000 type:user sort:followers`,
-            q: `location:${location} followers:>500 type:user sort:followers`,
+            q: `${queryString} type:user sort:${sort}`,
             per_page: 100,
             page: page,
           });
@@ -179,17 +186,19 @@ async function fetchTopChineseUsers() {
         });
 
         // 添加到用户列表中
-        locationUsers = [...locationUsers, ...data.items];
+        queryUsers = [...queryUsers, ...data.items];
         console.log(`第 ${page} 页找到 ${data.items.length} 名用户`);
 
         // 如果当前页返回的用户数量少于请求的数量或为0，说明已没有更多数据
         if (data.items.length < 100) {
           if (data.items.length === 0) {
             console.log(
-              `位置 ${location} 第 ${page} 页没有数据，停止获取后续页面`
+              `查询 [${queryString}] 第 ${page} 页没有数据，停止获取后续页面`
             );
           } else {
-            console.log(`位置 ${location} 的数据已全部获取，共 ${page} 页`);
+            console.log(
+              `查询 [${queryString}] 的数据已全部获取，共 ${page} 页`
+            );
           }
           break;
         }
@@ -200,32 +209,46 @@ async function fetchTopChineseUsers() {
         }
       }
 
-      console.log(`位置 ${location} 共找到 ${locationUsers.length} 名用户`);
-      allUsers = [...allUsers, ...locationUsers];
+      console.log(`查询 [${queryString}] 共找到 ${queryUsers.length} 名用户`);
+      allUsers = [...allUsers, ...queryUsers];
 
-      // 位置之间添加延迟
-      if (locations.indexOf(location) < locations.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+      // 查询之间添加延迟
+      if (searchQueries.indexOf(query) < searchQueries.length - 1) {
+        console.log("等待进行下一个查询...");
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     }
 
-    // 去重
+    // 去重处理
+    console.log(`所有查询共获取到 ${allUsers.length} 个用户记录，开始去重...`);
     const uniqueUsers = [];
     const uniqueIds = new Set();
+    let duplicateCount = 0;
+    let organizationFilteredCount = 0;
 
     for (const user of allUsers) {
       if (!uniqueIds.has(user.id)) {
         // 过滤掉组织列表中的账号
         if (organizationsToFilter.includes(user.login.toLowerCase())) {
           console.log(`过滤组织账号: ${user.login}`);
+          organizationFilteredCount++;
           continue;
         }
         uniqueIds.add(user.id);
         uniqueUsers.push(user);
+      } else {
+        duplicateCount++;
       }
     }
 
-    console.log(`去重后共有 ${uniqueUsers.length} 名用户`);
+    console.log(`统计信息:
+- 原始数据总量: ${allUsers.length} 条
+- 重复记录: ${duplicateCount} 条
+- 过滤组织账号: ${organizationFilteredCount} 条
+- 去重后用户数量: ${uniqueUsers.length} 条`);
+
+    // 原始数据中没有 followers_count，先不排序
+    console.log(`开始获取 ${uniqueUsers.length} 名用户的详细信息`);
 
     // 分批处理用户详情请求，避免过多并发请求
     const batchSize = 5; // 每批处理用户数
