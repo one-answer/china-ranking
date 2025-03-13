@@ -20,6 +20,7 @@ const organizationsToFilter = [
   "ant-design",
   "apache",
   "microsoft",
+  "oschina",
   // 添加更多需要过滤的组织
 ];
 

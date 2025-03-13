@@ -22,4 +22,6 @@ export const markdownDevelopers = [
   "amusi",
   "wx-chevalier",
   "doocs",
+  "azl397985856",
+  "huangzworks",
 ];
