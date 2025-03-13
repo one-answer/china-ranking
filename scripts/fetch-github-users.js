@@ -143,7 +143,7 @@ async function fetchTopChineseUsers() {
     // 设置搜索参数和结果缓存
     const searchCache = new Map();
     // 设置每个查询最大获取的页数
-    const maxPages = 15;
+    const maxPages = 10;
     console.log(`设置每个查询最大获取页数为: ${maxPages}`);
 
     for (const query of searchQueries) {
